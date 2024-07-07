@@ -1,0 +1,9 @@
+{
+    "users": {
+        "admin": {
+            "password": "$2y$10$utFw5m2TY5Wnc0XTa.kotu1Xb3um8h4O1DDN9w.R.Cc4mA.wyFNOC",
+            "databases": [],
+            "token": "19cd56aac98d2fb8891133d65fb66d8b"
+        }
+    }
+}

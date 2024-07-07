@@ -1,5 +1,5 @@
 <?php
-
+require_once 'users.php';
 // Function to read JSON file
 function read_json($filename) {
     $json_data = file_get_contents($filename);
@@ -17,17 +17,21 @@ function get_db_path($dbName) {
 }
 
 // Function to create a new database
-function create_database($dbName) {
+function create_database($dbName, $userName) {
     $db_path = get_db_path($dbName);
     if (!file_exists($db_path)) {
         mkdir($db_path, 0777, true);
+        grant_database_access($userName, $dbName);
         return true; // Return success or failure
     }
     return false; // Database already exists
 }
 
 // Function to create a new table in a database
-function create_table($dbName, $tableName, $columns) {
+function create_table($dbName, $tableName, $columns, $authenticatedUserName) {
+    if(!check_database_access($authenticatedUserName, $dbName)){
+        return "Database access restricted!";
+    }
     $db_path = get_db_path($dbName);
     $filename = "{$db_path}{$tableName}.json";
     $data = [
@@ -39,20 +43,37 @@ function create_table($dbName, $tableName, $columns) {
 }
 
 // Function to insert data into a table
-function insert_data($dbName, $tableName, $data) {
+function insert_data($dbName, $tableName, $data, $authenticatedUserName) {
+    if(!check_database_access($authenticatedUserName, $dbName)){
+        return "Database access restricted!";
+    }
     $db_path = get_db_path($dbName);
     $filename = "{$db_path}{$tableName}.json";
     $table_data = read_json($filename);
-    $table_data['rows'][] = $data;
+    $error = [];
+    foreach ($data as $row) {
+        if(verify_columns_match($table_data['columns'], $row)){
+            array_push($table_data['rows'], $row);
+        }else{
+            array_push($error, "Row does not match table columns:" . json_encode($row));
+        }
+    }
     write_json($filename, $table_data);
+    if(count($error) > 0){
+        return $error;
+    }
     return true; // Return success or failure
 }
 
 // Function to retrieve all data from a table
-function get_table_data($dbName, $tableName) {
+function get_table_data($dbName, $tableName, $authenticatedUserName) {
+    if(!check_database_access($authenticatedUserName, $dbName)){
+        return "Database access restricted!";
+    }
     $db_path = get_db_path($dbName);
     $filename = "{$db_path}{$tableName}.json";
-    return read_json($filename);
+    $table_data = read_json($filename);
+    return $table_data;
 }
 
 // Function to update data in a table
@@ -80,6 +101,17 @@ function delete_data($dbName, $tableName, $index) {
         return true; // Return success or failure
     }
     return false; // Data at index not found
+}
+
+function verify_columns_match($columns, $data) {
+    $keys = array_keys($data);
+    sort($columns);
+    sort($keys);
+    if ($columns === $keys) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 ?>

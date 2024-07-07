@@ -1,16 +1,53 @@
 <?php
 
-// Function to generate a unique token
 function generate_token() {
     return bin2hex(random_bytes(16));
 }
 
-// Function to authenticate a user by token
 function authenticate_user($token) {
-    // Implement your authentication logic here
-    // Example: Fetch user from database based on token
-    // Return username or false/null if not authenticated
-    return null; // Dummy implementation for demonstration
+    $users_data = read_json("../databases/users.json");
+    if (isset($users_data['users']) && !empty($users_data['users'])) {
+        foreach ($users_data['users'] as $username => $user) {
+            if (isset($user['token']) && $user['token'] === $token) {
+                return $username; // Return the username if token matches
+            }
+        }
+    }
+
+    return null; // Return null if token not found or invalid
+}
+
+function get_token_from_header() {
+    if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        return null;
+    }
+    $authorization_header = $_SERVER['HTTP_AUTHORIZATION'];
+    if (strpos($authorization_header, 'Bearer ') !== 0) {
+        return null;
+    }
+    $token = substr($authorization_header, 7);
+    return $token;
+}
+
+function authenticate(){
+    if(escapeAuthentication()){
+        return;
+    }
+    $token = get_token_from_header();
+    if (!$token) {
+        echo "No token found in Authorization header";
+    }
+    $authenticated_user = authenticate_user($token);
+    if (!$authenticated_user) {
+        echo "Authentication failed";
+        exit;
+    }else{
+        return $authenticated_user;
+    }
+}
+
+function escapeAuthentication(){
+    if(isset($_POST['action']) && ($_POST['action'] === 'create_user' || $_POST['action'] === 'get_token')) return true;
 }
 
 ?>
