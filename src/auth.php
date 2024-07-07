@@ -36,6 +36,7 @@ function authenticate(){
     $token = get_token_from_header();
     if (!$token) {
         echo "No token found in Authorization header";
+        exit;
     }
     $authenticated_user = authenticate_user($token);
     if (!$authenticated_user) {

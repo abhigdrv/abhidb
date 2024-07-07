@@ -1,0 +1,323 @@
+openapi: 3.0.0
+info:
+  title: Your API
+  version: 1.0.0
+  description: API for managing databases, tables, and users.
+  
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT  # Optional, but can specify the format
+
+security:
+  - bearerAuth: []
+
+paths:
+  /:
+    post:
+      summary: Create a new database
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  example: create_database
+                dbName:
+                  type: string
+                  example: my_database
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /create_table:
+    post:
+      summary: Create a new table
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  example: create_table
+                dbName:
+                  type: string
+                  example: my_database
+                tableName:
+                  type: string
+                  example: my_table
+                columns:
+                  type: string
+                  example: '[{"name": "id", "type": "int"}, {"name": "name", "type": "string"}]'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /insert_data:
+    post:
+      summary: Insert data into a table
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  example: insert_data
+                dbName:
+                  type: string
+                  example: my_database
+                tableName:
+                  type: string
+                  example: my_table
+                data:
+                  type: string
+                  example: '[{"id": 1, "name": "John Doe", "age": 30}]'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /get_table_data:
+    get:
+      summary: Retrieve data from a table
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+          example: get_table_data
+          required: true
+        - in: query
+          name: dbName
+          schema:
+            type: string
+          example: my_database
+          required: true
+        - in: query
+          name: tableName
+          schema:
+            type: string
+          example: my_table
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+
+  /get_users:
+    get:
+      summary: Retrieve all users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+          example: get_users
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  users:
+                    type: array
+                    items:
+                      type: string
+
+  /get_token:
+    post:
+      summary: Retrieve token
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  example: get_token
+                userName:
+                  type: string
+                  example: john_doe
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+
+  /create_user:
+    post:
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  example: create_user
+                userName:
+                  type: string
+                  example: john_doe
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  user:
+                    type: object
+
+  /update_data:
+    put:
+      summary: Update data in a table
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  example: update_data
+                dbName:
+                  type: string
+                  example: my_database
+                tableName:
+                  type: string
+                  example: my_table
+                index:
+                  type: integer
+                  example: 1
+                data:
+                  type: string
+                  example: '{"name": "Jane Doe", "age": 28}'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /delete_data:
+    delete:
+      summary: Delete data from a table
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: action
+          schema:
+            type: string
+          example: delete_data
+          required: true
+        - in: query
+          name: dbName
+          schema:
+            type: string
+          example: my_database
+          required: true
+        - in: query
+          name: tableName
+          schema:
+            type: string
+          example: my_table
+          required: true
+        - in: query
+          name: index
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
